@@ -2,28 +2,25 @@ from sqlalchemy import create_engine, Column, Integer, String, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config.settings import settings
+from sqlalchemy.pool import QueuePool
 
-# PostgreSQL bağlantı bilgileri
 database_url = settings.DATABASE_URL
 
 # Veritabanı bağlantısını oluştur
-engine = create_engine(database_url)
+engine = create_engine(
+    database_url,
+    poolclass=QueuePool,
+    pool_size=20,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=3600,
+    pool_pre_ping=True,
+    )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
-
-# class Person(Base):
-#     __tablename__ = "persons"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     uuid = Column(String, unique=True, index=True)
-#     name = Column(String, unique=True, index=True)
-#     encoding = Column(LargeBinary)
-
-# Tabloları oluştur
 Base.metadata.create_all(bind=engine)
 
-# Veritabanı bağlantı fonksiyonu
 def get_db():
     db = SessionLocal()
     try:
