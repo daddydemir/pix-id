@@ -6,7 +6,6 @@ from sqlalchemy.pool import QueuePool
 
 database_url = settings.DATABASE_URL
 
-# Veritabanı bağlantısını oluştur
 engine = create_engine(
     database_url,
     poolclass=QueuePool,
@@ -28,5 +27,12 @@ def get_db():
     finally:
         db.close()
 
-if __name__ == "__main__":
+def init_db():
+    from app.models.person import Person
+    from app.models.image import Image
+    from app.models.encoding import Encoding
+    from app.models.match import Match
     Base.metadata.create_all(bind=engine)
+
+if __name__ == "__main__":
+    init_db()
