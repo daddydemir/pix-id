@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilinen Yüzler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <nav class="mb-8">
+            <ul class="flex space-x-4">
+                <li>
+                    <a href="/faces/upload" class="text-blue-600 hover:text-blue-800">Yüz Yükle</a>
+                </li>
+                <li>
+                    <a href="/faces/known_users" class="text-blue-600 hover:text-blue-800">Bilinen Yüzler</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Bilinen Yüzler</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Buraya bilinen yüzler için kartlar gelecek -->
+                <div class="bg-gray-50 rounded-lg p-4 shadow">
+                    <div class="aspect-w-1 aspect-h-1 mb-4">
+                        <img src="#" alt="Örnek Yüz" class="rounded-lg object-cover w-full h-48">
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800">Kişi Adı</h3>
+                    <p class="text-gray-600">Son görülme: 12.04.2025</p>
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            Düzenle
+                        </button>
+                        <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                            Sil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
