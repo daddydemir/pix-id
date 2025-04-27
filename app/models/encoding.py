@@ -11,6 +11,7 @@ class Encoding(Base):
     id = Column(Integer, primary_key=True)
     uuid = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, index=True)
     person_id = Column(UUID(as_uuid=True), ForeignKey("persons.uuid"), nullable=False)
+    face_path = Column(String, nullable=False)
     encoding = Column(LargeBinary, nullable=False)
     
     person = relationship("Person", back_populates="encodings")
