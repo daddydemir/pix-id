@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanınmayan Yüzler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .face-image-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            overflow: hidden;
+        }
+        
+        .face-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: #f3f4f6;
+            transition: opacity 0.2s;
+        }
+
+        .face-image:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Navigasyon -->
+        <nav class="mb-8">
+            <ul class="flex space-x-4">
+                <li>
+                    <a href="/faces/upload" class="text-blue-600 hover:text-blue-800">Yüz Yükle</a>
+                </li>
+                <li>
+                    <a href="/faces/known_users" class="text-blue-600 hover:text-blue-800">Bilinen Yüzler</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Ana İçerik -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Tanınmayan Yüzler</h2>
+            
+            {% if faces %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for face in faces %}
+                <div class="bg-gray-50 rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
+                    <!-- Yüz Görüntüsü ve Detaylar Linki -->
+                    <div class="relative">
+                        <div class="face-image-container mb-4 rounded-lg cursor-pointer" 
+                             onclick="window.location.href='/faces/person/{{ face.person_id }}'">
+                            <img src="/{{ face.face_path }}" 
+                                 alt="Tanınmayan Yüz" 
+                                 class="face-image rounded-lg">
+                        </div>
+                        <a href="/faces/person/{{ face.person_id }}" 
+                           class="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded-full text-sm hover:bg-blue-700 transition-colors">
+                            Tüm Fotoğraflar
+                        </a>
+                    </div>
+
+                    <!-- Bilgi Alanı -->
+                    <div class="space-y-2 mb-4">
+                        <p class="text-gray-600">
+                            Tespit Tarihi: {{ face.detected_at.strftime('%d.%m.%Y %H:%M') }}
+                        </p>
+                        <p class="text-gray-600">
+                            Güven Skoru: %{{ face.confidence_score }}
+                        </p>
+                    </div>
+
+                    <!-- İsim Güncelleme Formu -->
+                    <form method="POST" 
+                          action="/users/update/{{ face.person_id }}" 
+                          class="mt-4 space-y-4">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" 
+                                   name="name" 
+                                   placeholder="Ad" 
+                                   required
+                                   minlength="2"
+                                   class="p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="text" 
+                                   name="surname" 
+                                   placeholder="Soyad" 
+                                   required
+                                   minlength="2"
+                                   class="p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <button type="submit" 
+                                class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                            Tanımla
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-600 text-center py-8">
+                Tanınmayan yüz bulunmamaktadır.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

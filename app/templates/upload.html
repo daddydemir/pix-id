@@ -5,29 +5,133 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yüz Yükleme</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .drag-area {
+      border: 2px dashed #cbd5e1;
+      transition: all 0.3s ease;
+    }
+    .drag-area.active {
+      border-color: #2563eb;
+      background-color: #eff6ff;
+    }
+    .preview-image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+  <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-2xl">
     <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Yüz Yükleme</h2>
-    <form action="/faces/upload/" method="post" enctype="multipart/form-data" class="space-y-4">
-      <div>
-        <label for="file" class="block text-sm font-medium text-gray-700 mb-1">Yüklemek istediğiniz yüz fotoğrafını seçin</label>
-        <input
-          type="file"
-          name="file"
-          id="file"
-          accept="image/*"
-          required
-          class="block w-full text-sm text-gray-700 bg-white border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
+    
+    <form action="/faces/upload/" method="post" enctype="multipart/form-data" class="space-y-6">
+      <div class="drag-area p-8 rounded-lg text-center cursor-pointer" id="drop-zone">
+        <div class="space-y-4">
+          <i class="fas fa-cloud-upload-alt text-4xl text-blue-600"></i>
+          <p class="text-gray-600">Dosyaları sürükleyip bırakın veya seçin</p>
+          <input
+            type="file"
+            name="files"
+            id="files"
+            multiple
+            accept=".jpg,.jpeg,.png"
+            class="hidden"
+            required
+          >
+          <button
+            type="button"
+            onclick="document.getElementById('files').click()"
+            class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors"
+          >
+            Dosya Seç
+          </button>
+        </div>
       </div>
+
+      <div id="preview" class="grid grid-cols-3 gap-4 mt-4"></div>
+
+      <div class="flex items-center justify-between text-sm text-gray-500">
+        <p>İzin verilen formatlar: JPG, JPEG, PNG</p>
+        <p id="fileCount">Seçili dosya: 0</p>
+      </div>
+
       <button
         type="submit"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-300"
       >
-        Yükle
+        Yükle ve Analiz Et
       </button>
     </form>
   </div>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('files');
+    const preview = document.getElementById('preview');
+    const fileCount = document.getElementById('fileCount');
+
+    // Sürükle-bırak işlemleri
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+      dropZone.classList.add('active');
+    }
+
+    function unhighlight() {
+      dropZone.classList.remove('active');
+    }
+
+    // Dosya seçme ve önizleme
+    dropZone.addEventListener('drop', handleDrop, false);
+    fileInput.addEventListener('change', handleFiles, false);
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      fileInput.files = files;
+      handleFiles();
+    }
+
+    function handleFiles() {
+      const files = fileInput.files;
+      fileCount.textContent = `Seçili dosya: ${files.length}`;
+      preview.innerHTML = '';
+
+      [...files].forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            const div = document.createElement('div');
+            div.className = 'relative group';
+            div.innerHTML = `
+              <img src="${e.target.result}" alt="${file.name}" class="preview-image">
+              <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                <p class="text-white text-xs p-2 text-center">${file.name}</p>
+              </div>
+            `;
+            preview.appendChild(div);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  </script>
 </body>
 </html>

@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bilinen Yüzler</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .face-image-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            overflow: hidden;
+        }
+        
+        .face-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: #f3f4f6;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
@@ -14,7 +32,7 @@
                     <a href="/faces/upload" class="text-blue-600 hover:text-blue-800">Yüz Yükle</a>
                 </li>
                 <li>
-                    <a href="/faces/known_users" class="text-blue-600 hover:text-blue-800">Bilinen Yüzler</a>
+                    <a href="/faces/unknown" class="text-blue-600 hover:text-blue-800">Tanınmayan Yüzler</a>
                 </li>
             </ul>
         </nav>
@@ -22,24 +40,35 @@
         <div class="bg-white shadow-lg rounded-lg p-6">
             <h2 class="text-2xl font-bold mb-6 text-gray-800">Bilinen Yüzler</h2>
             
+            {% if faces %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Buraya bilinen yüzler için kartlar gelecek -->
-                <div class="bg-gray-50 rounded-lg p-4 shadow">
-                    <div class="aspect-w-1 aspect-h-1 mb-4">
-                        <img src="#" alt="Örnek Yüz" class="rounded-lg object-cover w-full h-48">
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-800">Kişi Adı</h3>
-                    <p class="text-gray-600">Son görülme: 12.04.2025</p>
-                    <div class="mt-4 flex justify-end space-x-2">
-                        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            Düzenle
-                        </button>
-                        <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                            Sil
-                        </button>
-                    </div>
+                {% for face in faces %}
+                <div class="bg-gray-50 rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
+                    <a href="/faces/person/{{ face.person_id }}" class="block">
+                        <div class="face-image-container mb-4 rounded-lg">
+                            <img src="/{{ face.face_path }}" 
+                                 alt="{{ face.name }} {{ face.surname }}" 
+                                 class="face-image rounded-lg"
+                                 loading="lazy">
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 hover:text-blue-600">
+                            {{ face.name }} {{ face.surname }}
+                        </h3>
+                        <p class="text-gray-600">
+                            Son Görülme: {{ face.last_seen.strftime('%d.%m.%Y %H:%M') }}
+                        </p>
+                        <p class="text-gray-600">
+                            Güven: %{{ face.confidence_score }}
+                        </p>
+                    </a>
                 </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <p class="text-gray-600 text-center py-8">
+                Henüz bilinen yüz bulunmamaktadır.
+            </p>
+            {% endif %}
         </div>
     </div>
 </body>

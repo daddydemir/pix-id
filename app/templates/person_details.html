@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ person.name }} {{ person.surname }} - Detay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .face-image-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            overflow: hidden;
+        }
+        
+        .face-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #f3f4f6;
+        }
+
+        .original-image {
+            object-fit: contain;
+            max-height: 80vh;
+            margin: auto;
+        }
+
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 9999px;
+            border: 4px solid white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Navigasyon -->
+        <nav class="mb-8">
+            <ul class="flex space-x-4">
+                <li>
+                    <a href="/faces/known_users" class="text-blue-600 hover:text-blue-800">← Bilinen Yüzler</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Profil Bölümü -->
+        <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+            <div class="flex items-center gap-6">
+                <!-- Profil Fotoğrafı -->
+                <div>
+                    {% if matches %}
+                    <img src="/{{ matches[0].face_path }}" 
+                         alt="{{ person.name }} {{ person.surname }}"
+                         class="profile-image">
+                    {% endif %}
+                </div>
+                <!-- Kişi Bilgileri -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                        {{ person.name }} {{ person.surname }}
+                    </h2>
+                    {% if matches %}
+                    <p class="text-gray-600">
+                        Son Görülme: {{ matches[0].detected_at.strftime('%d.%m.%Y %H:%M') }}
+                    </p>
+                    <p class="text-gray-600">
+                        Toplam Eşleşme: {{ matches|length }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Eşleşmeler Bölümü -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h3 class="text-xl font-semibold mb-6">Tespit Edildiği Fotoğraflar</h3>
+            
+            {% if matches %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for match in matches %}
+                <div class="bg-gray-50 rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
+                    <!-- Orijinal Fotoğraf -->
+                    <div class="face-image-container mb-4">
+                        <img src="/{{ match.original_image_path }}" 
+                             alt="Orijinal Fotoğraf" 
+                             class="face-image rounded-lg cursor-pointer"
+                             loading="lazy"
+                             onclick="showFullImage('/{{ match.original_image_path }}')">
+                    </div>
+
+                    <!-- Detay Bilgileri -->
+                    <div class="space-y-2">
+                        <p class="text-gray-600">
+                            Tespit Tarihi: {{ match.detected_at.strftime('%d.%m.%Y %H:%M') }}
+                        </p>
+                        <p class="text-gray-600">
+                            Eşleşme Oranı: %{{ match.confidence_score }}
+                        </p>
+                        <button onclick="showFullImage('/{{ match.original_image_path }}')"
+                                class="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                            Büyük Görüntüle
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-600 text-center py-8">
+                Bu kişi için henüz eşleşme bulunmamaktadır.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="imageModal" 
+         class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div class="relative max-w-6xl w-full bg-white rounded-lg p-2">
+            <!-- Modal Başlık -->
+            <div class="absolute top-2 right-2 z-10">
+                <button onclick="closeModal()" 
+                        class="bg-white rounded-full p-2 hover:bg-gray-100 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <!-- Modal İçerik -->
+            <img id="modalImage" 
+                 src="" 
+                 alt="Büyük Görüntü" 
+                 class="original-image rounded-lg">
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function showFullImage(imagePath) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imagePath;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Modal dışına tıklandığında kapat
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // ESC tuşu ile modalı kapat
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
