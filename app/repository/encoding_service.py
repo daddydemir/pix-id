@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models import Encoding
+from app.models import Encoding, Match, Image
 from app.config.logging import setup_logger
 from datetime import datetime
 from typing import Optional, List
@@ -113,4 +113,36 @@ def compare_encodings(encoding1: bytes, encoding2: bytes) -> float:
         return similarity
     except Exception as e:
         logger.error(f"Encoding karşılaştırma hatası: {str(e)}")
+        raise
+
+def get_person_images(db: Session, person_id: uuid.UUID) -> List[dict]:
+    """
+    Bir kişinin eşleştiği tüm resimleri getirir.
+    Returns:
+        List[dict]: Her bir eşleşme için resim bilgisi ve güven skorunu içeren liste
+    """
+    try:
+        # Kişinin tüm eşleşmelerini ve ilgili resim bilgilerini al
+        matches = (
+            db.query(Match, Image)
+            .join(Image, Match.matched_image_id == Image.uuid)
+            .filter(Match.person_id == person_id)
+            .order_by(Match.confidence_score.desc())
+            .all()
+        )
+
+        results = []
+        for match, image in matches:
+            results.append({
+                "image_path": image.file_path,
+                "confidence_score": match.confidence_score,
+                "match_date": match.created_at,
+                "image_uuid": str(image.uuid)
+            })
+
+        logger.info(f"Kişi {person_id} için {len(results)} resim bulundu")
+        return results
+
+    except Exception as e:
+        logger.error(f"Kişi resimleri getirme hatası - Kişi ID {person_id}: {str(e)}")
         raise
