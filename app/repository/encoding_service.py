@@ -11,19 +11,29 @@ logger = setup_logger(__name__)
 def create_encoding(
     db: Session, 
     person_id: uuid.UUID, 
-    encoding_data: bytes
+    encoding_data: bytes,
+    face_path: str  # Yeni parametre
 ) -> Encoding:
-    """Yeni yüz encoding kaydı oluşturur."""
+    """
+    Yeni yüz encoding kaydı oluşturur.
+    
+    Args:
+        db: Veritabanı oturumu
+        person_id: Kişi UUID'si
+        encoding_data: Yüz encoding verisi
+        face_path: Tespit edilen yüz görüntüsünün yolu
+    """
     try:
         new_encoding = Encoding(
             uuid=uuid.uuid4(),
             person_id=person_id,
-            encoding=encoding_data
+            encoding=encoding_data,
+            face_path=face_path 
         )
         db.add(new_encoding)
         db.commit()
         db.refresh(new_encoding)
-        logger.info(f"Yeni encoding kaydı oluşturuldu: Kişi={person_id}")
+        logger.info(f"Yeni encoding kaydı oluşturuldu: Kişi={person_id}, Face Path={face_path}")
         return new_encoding
     except Exception as e:
         db.rollback()
@@ -55,9 +65,20 @@ def get_encoding_by_uuid(db: Session, uuid_str: str) -> Optional[Encoding]:
         raise
 
 def get_encodings_by_person(db: Session, person_id: uuid.UUID) -> List[Encoding]:
-    """Kişiye ait tüm encoding'leri getirir."""
+    """
+    Kişiye ait tüm encoding'leri getirir.
+    
+    Returns:
+        List[Encoding]: Her bir encoding kaydı face_path ile birlikte
+    """
     try:
-        encodings = db.query(Encoding).filter(Encoding.person_id == person_id).all()
+        encodings = (
+            db.query(Encoding)
+            .filter(Encoding.person_id == person_id)
+            .order_by(Encoding.created_at.desc())  # En son eklenenler önce
+            .all()
+        )
+        
         logger.info(f"Kişi ID: {person_id} için {len(encodings)} encoding bulundu")
         return encodings
     except Exception as e:
@@ -83,13 +104,24 @@ def delete_encoding(db: Session, encoding_id: int) -> bool:
 def update_encoding(
     db: Session, 
     encoding_id: int, 
-    new_encoding_data: bytes
+    new_encoding_data: bytes,
+    new_face_path: str = None  # Opsiyonel parametre
 ) -> Optional[Encoding]:
-    """Encoding verisini günceller."""
+    """
+    Encoding verisini günceller.
+    
+    Args:
+        db: Veritabanı oturumu
+        encoding_id: Güncellenecek encoding ID'si
+        new_encoding_data: Yeni encoding verisi
+        new_face_path: Yeni yüz görüntüsü yolu (opsiyonel)
+    """
     try:
         encoding = get_encoding_by_id(db, encoding_id)
         if encoding:
             encoding.encoding = new_encoding_data
+            if new_face_path:  # Eğer yeni yüz yolu verildiyse
+                encoding.face_path = new_face_path
             db.commit()
             logger.info(f"Encoding güncellendi - ID: {encoding_id}")
             return encoding

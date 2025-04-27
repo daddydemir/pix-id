@@ -63,7 +63,7 @@ def create_user(db: Session, name: str, surname: str):
 def update_user(db: Session, user_id: int, name: str = None, surname: str = None):
     """Kullanıcı bilgilerini günceller."""
     try:
-        user = get_user_by_id(db, user_id)
+        user = get_user_by_uuid(db, user_id)
         if user:
             if name:
                 user.name = name

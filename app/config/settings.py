@@ -9,6 +9,14 @@ class Settings(BaseSettings):
         "DATABASE_URL", 
         "postgresql://user:pass@localhost:5432/db_name"
     )
+    IMAGE_FOLDER : str = os.getenv(
+        "IMAGE_FOLDER", 
+        "app/static/uploads"
+    )
+    FACE_FOLDER : str = os.getenv(
+        "FACE_FOLDER", 
+        "app/static/detected_faces"
+    )
 
     class Config:
         env_file = ".env"
