@@ -7,7 +7,7 @@ load_dotenv()
 class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "postgresql://user:pass@localhost:5432/db_name"
+        "postgresql://user:pass@postgre:5432/db_name"
     )
     IMAGE_FOLDER : str = os.getenv(
         "IMAGE_FOLDER", 

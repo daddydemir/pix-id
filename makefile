@@ -8,3 +8,6 @@ update:
 
 build:
 	podman build -t pix-id:v1 .
+
+up:
+	podman compose up -d

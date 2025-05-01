@@ -10,8 +10,8 @@ class Person(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4, index=True)
-    name = Column(String, nullable=False)
-    surname = Column(String, nullable=False)
+    name = Column(String, nullable=True)
+    surname = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     

@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  postgre:
+    image: postgres:latest
+    container_name: postgre
+    networks:
+      - pix
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: db_name
+
+  app:
+    image: pix-id:v1
+    container_name: pix-app
+    networks:
+      - pix
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgre
+
+networks:
+  pix:
+    driver: bridge
+
